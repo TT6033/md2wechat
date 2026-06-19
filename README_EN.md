@@ -8,13 +8,6 @@
 
 📄 [中文](./README.md) | English
 
-## 📱 Follow Us
-
-<p align="center">
-  <img src="./qrcode.jpg" alt="WeChat QR Code" width="200">
-</p>
-<p align="center">Scan to follow our WeChat Official Account for more tech content</p>
-
 ## 🎯 What Problem Does It Solve
 
 WeChat Official Account editor doesn't support Markdown. Manual formatting is tedious. This tool converts Markdown to WeChat-compatible rich text with **all styles automatically inlined**, so you can copy and paste directly into the WeChat editor without losing formatting.
@@ -92,3 +85,10 @@ Issues and PRs welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 ## 📄 License
 
 [MIT License](./LICENSE)
+
+## 📱 Follow Us
+
+<p align="center">
+  <img src="./qrcode.jpg" alt="WeChat QR Code" width="200">
+</p>
+<p align="center">Scan to follow our WeChat Official Account for more tech content</p>
