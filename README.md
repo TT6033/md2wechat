@@ -8,6 +8,13 @@
 
 📄 中文 | [English](./README_EN.md)
 
+## 📱 关注公众号
+
+<p align="center">
+  <img src="./qrcode.jpg" alt="公众号二维码" width="200">
+</p>
+<p align="center">扫码关注「科技自媒体」公众号，获取更多技术干货</p>
+
 ## 🎯 解决什么问题
 
 微信公众号编辑器不支持 Markdown，手动排版费时费力。本工具将 Markdown 一键转换为微信公众号兼容的富文本，**所有样式自动转为 inline**，复制后直接粘贴到公众号编辑器即可，格式不丢失。
