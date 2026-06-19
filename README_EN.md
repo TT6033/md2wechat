@@ -1,4 +1,8 @@
-# 📝 MD2WeChat Pro
+<p align="center">
+  <img src="./logo.png" alt="MD2WeChat Logo" width="120">
+</p>
+
+<h1 align="center">📝 MD2WeChat Pro</h1>
 
 > Convert Markdown to WeChat Official Account articles — pure frontend, no backend needed, visual style customization, copy & paste directly.
 
