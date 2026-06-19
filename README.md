@@ -2,6 +2,8 @@
 
 > Markdown 转微信公众号排版工具 — 纯前端，无需后端，可视化样式调整，一键复制到公众号编辑器。
 
+🌐 **在线体验**：https://tt6033.github.io/md2wechat/
+
 📄 中文 | [English](./README_EN.md)
 
 ## 🎯 解决什么问题
@@ -25,10 +27,12 @@
 
 ### 在线使用
 
-直接用浏览器打开 `index.html` 即可，无需安装任何依赖。
+🌐 **在线体验**：[https://tt6033.github.io/md2wechat/](https://tt6033.github.io/md2wechat/) — 浏览器打开即用，无需安装。
+
+也可以克隆到本地运行：
 
 ```bash
-git clone https://github.com/yourname/md2wechat.git
+git clone https://github.com/TT6033/md2wechat.git
 cd md2wechat
 open index.html   # macOS
 # 或直接双击 index.html 用浏览器打开
