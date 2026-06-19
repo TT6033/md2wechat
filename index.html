@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown 转微信公众号排版工具 Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f0f0f0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== 顶部工具栏 ===== */
+.toolbar {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  z-index: 100;
+  min-height: 50px;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.toolbar-label {
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+}
+
+select, button {
+  padding: 4px 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 5px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+select:hover, button:hover { border-color: #07c160; background: #f0faf4; }
+
+button.primary {
+  background: #07c160;
+  color: #fff;
+  border-color: #07c160;
+}
+button.primary:hover { background: #06ad56; }
+
+input[type="file"] { display: none; }
+
+input[type="color"] {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+/* ===== 模板选择条 ===== */
+.template-bar {
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.template-bar-label {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.template-chip {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.template-chip:hover { border-color: #07c160; background: #f0faf4; }
+
+.template-chip.active {
+  background: #07c160;
+  color: #fff;
+  border-color: #07c160;
+}
+
+/* ===== 主体 ===== */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== 左侧面板 ===== */
+.left-panel {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+}
+
+.editor-tabs {
+  display: flex;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 10px;
+}
+
+.editor-tab {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.editor-tab.active {
+  color: #07c160;
+  border-bottom-color: #07c160;
+  font-weight: 600;
+}
+
+.editor-wrapper {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#markdownInput {
+  flex: 1;
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 14px;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  resize: none;
+  color: #333;
+  background: #fff;
+  tab-size: 2;
+}
+
+/* ===== 样式控制面板 ===== */
+.style-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  background: #fafafa;
+}
+
+.style-section {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.style-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.style-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.style-row label {
+  font-size: 11px;
+  color: #666;
+  min-width: 70px;
+}
+
+.style-row select,
+.style-row input[type="number"],
+.style-row input[type="range"] {
+  font-size: 11px;
+  padding: 3px 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.style-row .color-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.style-row .color-row input[type="color"] {
+  width: 22px;
+  height: 22px;
+}
+
+.style-row .color-row input[type="text"] {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #666;
+  min-width: 0;
+}
+
+.style-row .range-value {
+  font-size: 11px;
+  color: #07c160;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ===== 预览 ===== */
+.preview-panel {
+  width: 55%;
+  display: flex;
+  flex-direction: column;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.preview-header {
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-header .info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-header span { font-size: 11px; color: #999; }
+
+.preview-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.wechat-article {
+  width: 100%;
+  max-width: 677px;
+  background: #fff;
+  padding: 20px 16px;
+  min-height: 100%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.03);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #333;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== 弹窗 ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.modal h3 { font-size: 15px; margin-bottom: 10px; color: #333; }
+
+.modal textarea {
+  width: 100%;
+  min-height: 140px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.modal input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.saved-tpl-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .left-panel, .preview-panel { width: 100%; }
+  .left-panel { border-right: none; border-bottom: 1px solid #e0e0e0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 工具栏 ===== -->
+<div class="toolbar">
+  <div class="toolbar-title">📝 MD2WeChat Pro</div>
+  <div class="toolbar-group">
+    <button onclick="importFile()">📥 导入</button>
+    <input type="file" id="fileInput" accept=".md,.markdown,.txt">
+    <button onclick="openSaveModal()">💾 保存方案</button>
+    <button onclick="openLoadModal()">📂 加载方案</button>
+    <button onclick="exportHTML()">📤 导出</button>
+    <button class="primary" onclick="copyHTML()">📋 复制</button>
+  </div>
+</div>
+
+<!-- ===== 模板选择条 ===== -->
+<div class="template-bar" id="templateBar"></div>
+
+<!-- ===== 主体 ===== -->
+<div class="main">
+  <!-- 左侧：Markdown + 样式控制 -->
+  <div class="left-panel">
+    <div class="editor-tabs">
+      <div class="editor-tab active" data-tab="md" onclick="switchTab('md')">✏️ Markdown</div>
+      <div class="editor-tab" data-tab="style" onclick="switchTab('style')">🎨 样式设置</div>
+    </div>
+    <div class="editor-wrapper">
+      <textarea id="markdownInput" placeholder="在此输入 Markdown 内容..."></textarea>
+      <div class="style-panel" id="stylePanel" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- 右侧预览 -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <div class="info">
+        <span>📱 微信公众号预览</span>
+        <span id="tplName">微信经典绿</span>
+      </div>
+      <span id="charCount">0 字</span>
+    </div>
+    <div class="preview-wrapper">
+      <div class="wechat-article" id="preview"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 保存弹窗 -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <h3>保存当前样式方案</h3>
+    <input type="text" id="saveName" placeholder="方案名称，如：我的博客风格">
+    <p style="font-size:12px;color:#999;margin-bottom:6px;">方案 JSON（可复制分享）：</p>
+    <textarea id="saveJSON" readonly></textarea>
+    <div class="modal-actions">
+      <button onclick="closeModal('saveModal')">取消</button>
+      <button onclick="copyJSON()">复制JSON</button>
+      <button class="primary" onclick="saveToLocal()">保存到本地</button>
+    </div>
+  </div>
+</div>
+
+<!-- 加载弹窗 -->
+<div class="modal-overlay" id="loadModal">
+  <div class="modal">
+    <h3>加载样式方案</h3>
+    <div id="savedList"></div>
+    <p style="font-size:12px;color:#999;margin:8px 0 6px;">或粘贴 JSON：</p>
+    <textarea id="loadJSON" placeholder='{"name":"我的方案","primaryColor":"#07c160",...}'></textarea>
+    <div class="modal-actions">
+      <button onclick="closeModal('loadModal')">取消</button>
+      <button class="primary" onclick="loadFromJSON()">加载</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================================================================
+//  内置模板
+// =================================================================
+const TEMPLATES = {
+  classic_green: { name:'微信经典绿', primaryColor:'#07c160', secondaryColor:'#f0faf4', textColor:'#333', linkColor:'#576b95', codeBg:'#f0f0f0', codeColor:'#c7254e', preBg:'#f6f8fa', blockquoteBg:'#f0faf4', blockquoteColor:'#666', h2Style:'border-left', tableHeadColor:'#07c160', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  business_blue: { name:'商务蓝', primaryColor:'#1990ff', secondaryColor:'#f0f7ff', textColor:'#333', linkColor:'#1990ff', codeBg:'#eef6ff', codeColor:'#0066cc', preBg:'#f0f7ff', blockquoteBg:'#f0f7ff', blockquoteColor:'#555', h2Style:'border-left', tableHeadColor:'#1990ff', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  elegant_purple: { name:'优雅紫', primaryColor:'#6222c2', secondaryColor:'#f8f0fd', textColor:'#333', linkColor:'#6222c2', codeBg:'#f3eefa', codeColor:'#6222c2', preBg:'#f8f0fd', blockquoteBg:'#f8f0fd', blockquoteColor:'#666', h2Style:'border-left', tableHeadColor:'#6222c2', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  vibrant_orange: { name:'活力橙', primaryColor:'#ff7a45', secondaryColor:'#fff5f0', textColor:'#333', linkColor:'#ff7a45', codeBg:'#fff5f0', codeColor:'#d4380d', preBg:'#fff5f0', blockquoteBg:'#fff5f0', blockquoteColor:'#666', h2Style:'border-left', tableHeadColor:'#ff7a45', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  minimal_gray: { name:'极简灰', primaryColor:'#555555', secondaryColor:'#f5f5f5', textColor:'#333', linkColor:'#576b95', codeBg:'#f0f0f0', codeColor:'#c7254e', preBg:'#f6f6f6', blockquoteBg:'#f5f5f5', blockquoteColor:'#666', h2Style:'border-left', tableHeadColor:'#555555', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  tech_dark: { name:'科技暗黑', primaryColor:'#00d4aa', secondaryColor:'#1a1a2e', textColor:'#c8c8d0', linkColor:'#00d4aa', codeBg:'#1e1e3f', codeColor:'#00d4aa', preBg:'#151530', blockquoteBg:'#1a1a2e', blockquoteColor:'#aaa', h2Style:'gradient', tableHeadColor:'#00d4aa', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  literary: { name:'文艺范', primaryColor:'#8b6914', secondaryColor:'#fdfbf7', textColor:'#4a4a4a', linkColor:'#8b6914', codeBg:'#f5f0e8', codeColor:'#8b6914', preBg:'#fdfbf7', blockquoteBg:'#fdfbf7', blockquoteColor:'#7a7a7a', h2Style:'center', tableHeadColor:'#8b6914', fontFamily:'serif', paragraphAlign:'justify', lineHeight:1.8, letterSpacing:1 },
+  pink_girl: { name:'粉色少女', primaryColor:'#ec4899', secondaryColor:'#fdf2f8', textColor:'#444', linkColor:'#ec4899', codeBg:'#fdf2f8', codeColor:'#be185d', preBg:'#fdf2f8', blockquoteBg:'#fdf2f8', blockquoteColor:'#666', h2Style:'border-left', tableHeadColor:'#ec4899', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  china_red: { name:'中国红', primaryColor:'#c0392b', secondaryColor:'#fdf2f2', textColor:'#333', linkColor:'#c0392b', codeBg:'#fdf2f2', codeColor:'#922b21', preBg:'#fdf2f2', blockquoteBg:'#fdf2f2', blockquoteColor:'#666', h2Style:'border-left', tableHeadColor:'#c0392b', fontFamily:'system', paragraphAlign:'left', lineHeight:1.75, letterSpacing:0.5 },
+  academic: { name:'学术严谨', primaryColor:'#2c3e50', secondaryColor:'#f8f9fa', textColor:'#2c3e50', linkColor:'#2980b9', codeBg:'#eef2f7', codeColor:'#2c3e50', preBg:'#f8f9fa', blockquoteBg:'#f8f9fa', blockquoteColor:'#555', h2Style:'underline', tableHeadColor:'#2c3e50', fontFamily:'serif', paragraphAlign:'justify', lineHeight:1.75, letterSpacing:0 },
+};
+
+// =================================================================
+//  状态 — 当前样式配置（用户可通过面板调整）
+// =================================================================
+let styleConfig = { ...TEMPLATES.classic_green };
+delete styleConfig.name;
+let currentTemplateKey = 'classic_green';
+let currentFontSize = 16;
+
+// =================================================================
+//  Marked
+// =================================================================
+marked.setOptions({ breaks: true, gfm: true });
+
+// =================================================================
+//  样式控制面板渲染
+// =================================================================
+function renderStylePanel() {
+  const panel = document.getElementById('stylePanel');
+
+  const fontFamilies = [
+    { v:'system', t:'系统默认' },
+    { v:'serif', t:'衬线字体（宋体/Georgia）' },
+    { v:'sans-serif', t:'无衬线字体（黑体）' },
+    { v:'monospace', t:'等宽字体' },
+  ];
+
+  const h2Styles = [
+    { v:'border-left', t:'左边框竖线' },
+    { v:'center', t:'居中下划线' },
+    { v:'gradient', t:'渐变背景' },
+    { v:'underline', t:'底部粗线' },
+    { v:'plain', t:'纯文字无装饰' },
+  ];
+
+  const aligns = [
+    { v:'left', t:'左对齐' },
+    { v:'center', t:'居中' },
+    { v:'justify', t:'两端对齐' },
+  ];
+
+  const opts = (arr, cur) => arr.map(o => `<option value="${o.v}" ${o.v===cur?'selected':''}>${o.t}</option>`).join('');
+
+  panel.innerHTML = `
+    <!-- 颜色 -->
+    <div class="style-section">
+      <h4>🎨 颜色设置</h4>
+      ${colorRow('主色调', 'primaryColor', styleConfig.primaryColor)}
+      ${colorRow('背景辅色', 'secondaryColor', styleConfig.secondaryColor)}
+      ${colorRow('正文颜色', 'textColor', styleConfig.textColor)}
+      ${colorRow('链接颜色', 'linkColor', styleConfig.linkColor)}
+      ${colorRow('引用文字', 'blockquoteColor', styleConfig.blockquoteColor)}
+    </div>
+
+    <!-- 代码块 -->
+    <div class="style-section">
+      <h4>💻 代码样式</h4>
+      ${colorRow('代码背景', 'codeBg', styleConfig.codeBg)}
+      ${colorRow('代码文字', 'codeColor', styleConfig.codeColor)}
+      ${colorRow('代码块背景', 'preBg', styleConfig.preBg)}
+    </div>
+
+    <!-- 引用块 -->
+    <div class="style-section">
+      <h4>💬 引用样式</h4>
+      ${colorRow('引用背景', 'blockquoteBg', styleConfig.blockquoteBg)}
+    </div>
+
+    <!-- 标题样式 -->
+    <div class="style-section">
+      <h4>📋 标题样式</h4>
+      <div class="style-row">
+        <label>H2 风格</label>
+        <select id="cfg_h2Style" onchange="updateStyle('h2Style', this.value)">${opts(h2Styles, styleConfig.h2Style)}</select>
+      </div>
+      ${colorRow('表头颜色', 'tableHeadColor', styleConfig.tableHeadColor)}
+    </div>
+
+    <!-- 排版 -->
+    <div class="style-section">
+      <h4>📏 排版设置</h4>
+      <div class="style-row">
+        <label>正文字号</label>
+        <input type="range" min="12" max="22" value="${currentFontSize}" id="cfg_fontSize" oninput="onFontSizeChange(this.value)">
+        <span class="range-value" id="fontSizeVal">${currentFontSize}px</span>
+      </div>
+      <div class="style-row">
+        <label>行高</label>
+        <input type="range" min="1.4" max="2.2" step="0.05" value="${styleConfig.lineHeight}" id="cfg_lineHeight" oninput="updateStyle('lineHeight', parseFloat(this.value)); document.getElementById('lineHeightVal').textContent=this.value">
+        <span class="range-value" id="lineHeightVal">${styleConfig.lineHeight}</span>
+      </div>
+      <div class="style-row">
+        <label>字间距</label>
+        <input type="range" min="0" max="3" step="0.1" value="${styleConfig.letterSpacing}" id="cfg_letterSpacing" oninput="updateStyle('letterSpacing', parseFloat(this.value)); document.getElementById('lsVal').textContent=this.value+'px'">
+        <span class="range-value" id="lsVal">${styleConfig.letterSpacing}px</span>
+      </div>
+      <div class="style-row">
+        <label>段落对齐</label>
+        <select id="cfg_paragraphAlign" onchange="updateStyle('paragraphAlign', this.value)">${opts(aligns, styleConfig.paragraphAlign)}</select>
+      </div>
+      <div class="style-row">
+        <label>字体族</label>
+        <select id="cfg_fontFamily" onchange="updateStyle('fontFamily', this.value)">${opts(fontFamilies, styleConfig.fontFamily)}</select>
+      </div>
+    </div>
+
+    <!-- 快捷操作 -->
+    <div class="style-section">
+      <h4>⚡ 快捷操作</h4>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="resetStyle()" style="flex:1;min-width:80px;">恢复模板默认</button>
+        <button onclick="randomColor()" style="flex:1;min-width:80px;">🎲 随机配色</button>
+      </div>
+    </div>
+  `;
+}
+
+function colorRow(label, key, value) {
+  return `
+    <div class="style-row">
+      <label>${label}</label>
+      <div class="color-row">
+        <input type="color" value="${value}" oninput="updateStyle('${key}', this.value); document.getElementById('txt_${key}').value=this.value">
+        <input type="text" id="txt_${key}" value="${value}" oninput="if(this.value.match(/^#[0-9a-fA-F]{6}$/)){updateStyle('${key}', this.value); document.querySelector('input[type=color][oninput*=${key}').value=this.value}" style="flex:1;">
+      </div>
+    </div>`;
+}
+
+function updateStyle(key, value) {
+  styleConfig[key] = value;
+  renderPreview();
+}
+
+function onFontSizeChange(val) {
+  currentFontSize = parseInt(val);
+  document.getElementById('fontSizeVal').textContent = currentFontSize + 'px';
+  renderPreview();
+}
+
+function resetStyle() {
+  const tpl = { ...TEMPLATES[currentTemplateKey] };
+  delete tpl.name;
+  styleConfig = tpl;
+  currentFontSize = 16;
+  renderStylePanel();
+  renderPreview();
+  showToast('已恢复模板默认样式');
+}
+
+function randomColor() {
+  const palette = ['#07c160','#1990ff','#6222c2','#ff7a45','#ec4899','#c0392b','#00d4aa','#8b6914','#2c3e50','#555555','#e74c3c','#16a085','#34495e','#9b59b6','#1abc9c'];
+  const pick = () => palette[Math.floor(Math.random()*palette.length)];
+  styleConfig.primaryColor = pick();
+  styleConfig.tableHeadColor = styleConfig.primaryColor;
+  styleConfig.secondaryColor = pick();
+  styleConfig.blockquoteBg = styleConfig.secondaryColor;
+  styleConfig.linkColor = pick();
+  styleConfig.codeColor = pick();
+  renderStylePanel();
+  renderPreview();
+  showToast('已随机生成配色 🎲');
+}
+
+// =================================================================
+//  Inline 样式生成（核心）
+// =================================================================
+function applyInlineStyles(html) {
+  const s = styleConfig;
+  const fs = currentFontSize;
+
+  const fontFamily = s.fontFamily === 'serif' ? "Georgia,'Songti SC',serif" :
+                     s.fontFamily === 'monospace' ? "'SF Mono','Consolas',monospace" :
+                     s.fontFamily === 'sans-serif' ? "'PingFang SC','Helvetica Neue',sans-serif" :
+                     "-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif";
+
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+
+  function process(node) {
+    if (node.nodeType !== 1) return;
+    const tag = node.tagName.toLowerCase();
+
+    const baseFont = `font-family:${fontFamily};`;
+
+    switch(tag) {
+      case 'h1':
+        node.setAttribute('style', `${baseFont}font-size:${fs+6}px;font-weight:700;text-align:center;margin:20px 0;color:${s.textColor};`);
+        break;
+      case 'h2':
+        let h2style = '';
+        if (s.h2Style === 'border-left') {
+          h2style = `${baseFont}font-size:${fs+4}px;font-weight:700;margin:25px 0 15px;padding:8px 0 8px 12px;border-left:4px solid ${s.primaryColor};color:${s.textColor};`;
+        } else if (s.h2Style === 'center') {
+          h2style = `${baseFont}font-size:${fs+4}px;font-weight:700;margin:25px 0 15px;padding:8px 0;text-align:center;border-bottom:2px solid ${s.primaryColor};color:${s.textColor};`;
+        } else if (s.h2Style === 'gradient') {
+          h2style = `${baseFont}font-size:${fs+4}px;font-weight:700;margin:25px 0 15px;padding:8px 12px;background:linear-gradient(90deg,${s.secondaryColor},transparent);color:${s.primaryColor};border-radius:4px;`;
+        } else if (s.h2Style === 'underline') {
+          h2style = `${baseFont}font-size:${fs+4}px;font-weight:700;margin:25px 0 15px;padding:6px 0;border-bottom:2px solid ${s.primaryColor};color:${s.textColor};`;
+        } else {
+          h2style = `${baseFont}font-size:${fs+4}px;font-weight:700;margin:25px 0 15px;color:${s.textColor};`;
+        }
+        node.setAttribute('style', h2style);
+        break;
+      case 'h3':
+        node.setAttribute('style', `${baseFont}font-size:${fs+2}px;font-weight:700;margin:20px 0 10px;color:${s.textColor};`);
+        break;
+      case 'h4':
+        node.setAttribute('style', `${baseFont}font-size:${fs+1}px;font-weight:700;margin:18px 0 8px;color:${s.textColor};`);
+        break;
+      case 'h5':
+        node.setAttribute('style', `${baseFont}font-size:${fs}px;font-weight:700;margin:15px 0 6px;color:${s.textColor};`);
+        break;
+      case 'h6':
+        node.setAttribute('style', `${baseFont}font-size:${fs-1}px;font-weight:700;margin:12px 0 6px;color:#666;`);
+        break;
+      case 'p':
+        node.setAttribute('style', `${baseFont}font-size:${fs}px;line-height:${s.lineHeight};color:${s.textColor};margin:15px 0;letter-spacing:${s.letterSpacing}px;word-break:break-all;text-align:${s.paragraphAlign};`);
+        break;
+      case 'a':
+        node.setAttribute('style', `color:${s.linkColor};text-decoration:none;border-bottom:1px solid ${s.linkColor};`);
+        break;
+      case 'strong': case 'b':
+        node.setAttribute('style', `font-weight:700;color:${s.textColor};`);
+        break;
+      case 'em': case 'i':
+        node.setAttribute('style', `font-style:italic;`);
+        break;
+      case 'blockquote':
+        node.setAttribute('style', `margin:15px 0;padding:10px 15px;background:${s.blockquoteBg};border-left:4px solid ${s.primaryColor};color:${s.blockquoteColor};font-size:${fs-1}px;line-height:${s.lineHeight};`);
+        break;
+      case 'ul':
+        node.setAttribute('style', `${baseFont}margin:15px 0;padding-left:24px;font-size:${fs}px;line-height:${s.lineHeight};color:${s.textColor};list-style:disc;`);
+        break;
+      case 'ol':
+        node.setAttribute('style', `${baseFont}margin:15px 0;padding-left:24px;font-size:${fs}px;line-height:${s.lineHeight};color:${s.textColor};list-style:decimal;`);
+        break;
+      case 'li':
+        node.setAttribute('style', `margin:5px 0;`);
+        break;
+      case 'code':
+        if (node.parentElement && node.parentElement.tagName.toLowerCase() !== 'pre') {
+          node.setAttribute('style', `font-family:'SF Mono','Consolas',monospace;background:${s.codeBg};color:${s.codeColor};padding:2px 6px;border-radius:3px;font-size:${fs-2}px;`);
+        }
+        break;
+      case 'pre':
+        node.setAttribute('style', `margin:15px 0;padding:16px;background:${s.preBg};border-radius:6px;overflow-x:auto;font-size:${fs-2}px;line-height:1.6;`);
+        break;
+      case 'img':
+        node.setAttribute('style', `max-width:100%;border-radius:8px;display:block;margin:15px auto;`);
+        break;
+      case 'table':
+        node.setAttribute('style', `width:100%;border-collapse:collapse;margin:15px 0;font-size:${fs-1}px;`);
+        break;
+      case 'th':
+        node.setAttribute('style', `background:${s.tableHeadColor};color:#fff;font-weight:700;padding:8px 12px;text-align:left;border:1px solid #ddd;`);
+        break;
+      case 'td':
+        node.setAttribute('style', `padding:8px 12px;border:1px solid #ddd;color:${s.textColor};`);
+        break;
+      case 'hr':
+        node.setAttribute('style', `border:none;border-top:1px solid #ddd;margin:20px 0;`);
+        break;
+      case 'del': case 's':
+        node.setAttribute('style', `text-decoration:line-through;color:#999;`);
+        break;
+    }
+
+    // 表格偶数行
+    if (tag === 'tr') {
+      const cells = node.querySelectorAll('td');
+      let prev = node.previousElementSibling, count = 0;
+      while (prev) { if (prev.tagName.toLowerCase()==='tr') count++; prev = prev.previousElementSibling; }
+      if (count > 0 && count % 2 === 1) {
+        cells.forEach(td => {
+          const st = td.getAttribute('style')||'';
+          td.setAttribute('style', st+'background:#f9f9f9;');
+        });
+      }
+    }
+
+    Array.from(node.childNodes).forEach(process);
+  }
+
+  Array.from(temp.childNodes).forEach(process);
+  return temp.innerHTML;
+}
+
+// =================================================================
+//  渲染预览
+// =================================================================
+function renderPreview() {
+  const input = document.getElementById('markdownInput').value;
+  const preview = document.getElementById('preview');
+  const charCount = document.getElementById('charCount');
+  const tplNameEl = document.getElementById('tplName');
+
+  tplNameEl.textContent = styleConfig._customName || TEMPLATES[currentTemplateKey]?.name || '自定义';
+
+  if (!input.trim()) {
+    preview.innerHTML = '<p style="color:#ccc;text-align:center;margin-top:40px;">在左侧输入 Markdown，右侧实时预览效果</p>';
+    charCount.textContent = '0 字';
+    return;
+  }
+
+  let html = marked.parse(input);
+  html = applyInlineStyles(html);
+  preview.innerHTML = html;
+
+  charCount.textContent = preview.innerText.length + ' 字';
+
+  preview.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+}
+
+// =================================================================
+//  模板条
+// =================================================================
+function renderTemplateBar() {
+  const bar = document.getElementById('templateBar');
+  let html = '<span class="template-bar-label">模板：</span>';
+  for (const [key, tpl] of Object.entries(TEMPLATES)) {
+    const active = key === currentTemplateKey ? ' active' : '';
+    html += `<span class="template-chip${active}" onclick="selectTemplate('${key}')">${tpl.name}</span>`;
+  }
+  // 本地保存的
+  const saved = getSaved();
+  for (const [key, tpl] of Object.entries(saved)) {
+    html += `<span class="template-chip" onclick="selectSaved('${key}')">${tpl.name} 🔧</span>`;
+  }
+  bar.innerHTML = html;
+}
+
+function selectTemplate(key) {
+  currentTemplateKey = key;
+  const tpl = { ...TEMPLATES[key] };
+  delete tpl.name;
+  styleConfig = tpl;
+  renderTemplateBar();
+  renderStylePanel();
+  renderPreview();
+}
+
+function selectSaved(key) {
+  const saved = getSaved();
+  if (!saved[key]) return;
+  const tpl = { ...saved[key] };
+  delete tpl.name;
+  styleConfig = tpl;
+  styleConfig._customName = saved[key].name;
+  currentTemplateKey = key;
+  TEMPLATES[key] = saved[key];
+  renderTemplateBar();
+  renderStylePanel();
+  renderPreview();
+  showToast('已加载：' + saved[key].name);
+}
+
+// =================================================================
+//  Tab 切换
+// =================================================================
+function switchTab(tab) {
+  document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  if (tab === 'md') {
+    document.getElementById('markdownInput').style.display = '';
+    document.getElementById('stylePanel').style.display = 'none';
+  } else {
+    document.getElementById('markdownInput').style.display = 'none';
+    document.getElementById('stylePanel').style.display = '';
+    renderStylePanel();
+  }
+}
+
+// =================================================================
+//  导入/导出
+// =================================================================
+function importFile() { document.getElementById('fileInput').click(); }
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('markdownInput').value = ev.target.result;
+    renderPreview();
+    showToast('文件导入成功');
+  };
+  reader.readAsText(file);
+});
+
+function exportHTML() {
+  const input = document.getElementById('markdownInput').value;
+  if (!input.trim()) { showToast('请先输入内容'); return; }
+  let html = applyInlineStyles(marked.parse(input));
+  const tplName = styleConfig._customName || TEMPLATES[currentTemplateKey]?.name || '自定义';
+  const fullHTML = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${tplName}</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css"></head><body><section style="max-width:677px;margin:0 auto;padding:20px 16px;">${html}</section><script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"><\/script><script>document.querySelectorAll('pre code').forEach(b=>hljs.highlightElement(b));<\/script></body></html>`;
+  const blob = new Blob([fullHTML], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wechat-article-' + Date.now() + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('HTML 导出成功');
+}
+
+function copyHTML() {
+  const input = document.getElementById('markdownInput').value;
+  if (!input.trim()) { showToast('请先输入内容'); return; }
+  let html = applyInlineStyles(marked.parse(input));
+  const fullContent = `<section style="max-width:677px;margin:0 auto;padding:20px 16px;">${html}</section>`;
+  const listener = function(e) {
+    e.preventDefault();
+    e.clipboardData.setData('text/html', fullContent);
+    e.clipboardData.setData('text/plain', fullContent);
+  };
+  document.addEventListener('copy', listener);
+  document.execCommand('copy');
+  document.removeEventListener('copy', listener);
+  showToast('已复制，可直接粘贴到微信公众号编辑器');
+}
+
+// =================================================================
+//  保存/加载方案
+// =================================================================
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('md2wechat_tpl') || '{}'); }
+  catch(e) { return {}; }
+}
+
+function openSaveModal() {
+  const name = styleConfig._customName || TEMPLATES[currentTemplateKey]?.name || '自定义';
+  document.getElementById('saveName').value = name + '_副本';
+  const saveObj = { ...styleConfig, name: name + '_副本' };
+  delete saveObj._customName;
+  document.getElementById('saveJSON').value = JSON.stringify(saveObj, null, 2);
+  document.getElementById('saveModal').classList.add('show');
+}
+
+function saveToLocal() {
+  const name = document.getElementById('saveName').value.trim();
+  if (!name) { showToast('请输入方案名称'); return; }
+  const key = 'custom_' + Date.now();
+  const saveObj = { ...styleConfig, name };
+  delete saveObj._customName;
+  const saved = getSaved();
+  saved[key] = saveObj;
+  localStorage.setItem('md2wechat_tpl', JSON.stringify(saved));
+  TEMPLATES[key] = saveObj;
+  currentTemplateKey = key;
+  closeModal('saveModal');
+  renderTemplateBar();
+  showToast('方案已保存：' + name);
+}
+
+function copyJSON() {
+  const text = document.getElementById('saveJSON').value;
+  navigator.clipboard.writeText(text).then(() => showToast('JSON 已复制'));
+}
+
+function openLoadModal() {
+  const saved = getSaved();
+  const listEl = document.getElementById('savedList');
+  let html = '';
+  for (const [key, tpl] of Object.entries(saved)) {
+    html += `<div class="saved-tpl-item"><span>${tpl.name}</span><div style="display:flex;gap:4px;"><button onclick="loadSaved('${key}')" style="padding:2px 8px;font-size:11px;">加载</button><button onclick="deleteSaved('${key}')" style="padding:2px 8px;font-size:11px;color:#e74c3c;border-color:#e74c3c;">删除</button></div></div>`;
+  }
+  if (!html) html = '<p style="font-size:12px;color:#999;text-align:center;padding:8px;">暂无保存的方案</p>';
+  listEl.innerHTML = html;
+  document.getElementById('loadJSON').value = '';
+  document.getElementById('loadModal').classList.add('show');
+}
+
+function loadSaved(key) {
+  const saved = getSaved();
+  if (!saved[key]) return;
+  const tpl = { ...saved[key] };
+  const name = tpl.name;
+  delete tpl.name;
+  styleConfig = tpl;
+  styleConfig._customName = name;
+  currentTemplateKey = key;
+  closeModal('loadModal');
+  renderTemplateBar();
+  renderStylePanel();
+  renderPreview();
+  showToast('已加载：' + name);
+}
+
+function deleteSaved(key) {
+  const saved = getSaved();
+  delete saved[key];
+  localStorage.setItem('md2wechat_tpl', JSON.stringify(saved));
+  openLoadModal();
+  showToast('已删除');
+}
+
+function loadFromJSON() {
+  const text = document.getElementById('loadJSON').value.trim();
+  if (!text) { showToast('请粘贴 JSON'); return; }
+  try {
+    const config = JSON.parse(text);
+    if (!config.primaryColor) { showToast('格式不正确，缺少 primaryColor'); return; }
+    const key = 'custom_' + Date.now();
+    const name = config.name || '导入的方案';
+    delete config.name;
+    config._customName = name;
+    styleConfig = config;
+    const saveObj = { ...config, name };
+    delete saveObj._customName;
+    const saved = getSaved();
+    saved[key] = saveObj;
+    localStorage.setItem('md2wechat_tpl', JSON.stringify(saved));
+    TEMPLATES[key] = saveObj;
+    currentTemplateKey = key;
+    closeModal('loadModal');
+    renderTemplateBar();
+    renderStylePanel();
+    renderPreview();
+    showToast('已加载：' + name);
+  } catch(e) {
+    showToast('JSON 错误：' + e.message);
+  }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// =================================================================
+//  Toast
+// =================================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// =================================================================
+//  事件
+// =================================================================
+document.getElementById('markdownInput').addEventListener('input', function() {
+  clearTimeout(window._rt);
+  window._rt = setTimeout(renderPreview, 200);
+});
+
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey||e.metaKey) && e.key==='s') { e.preventDefault(); copyHTML(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); copyHTML(); }
+});
+
+// =================================================================
+//  初始化
+// =================================================================
+const sample = `# 欢迎使用 MD2WeChat Pro
+
+一个**强大的 Markdown 转微信公众号排版工具**，支持可视化样式调整。
+
+## ✨ 核心特性
+
+- 🎨 **10 套内置模板** — 微信绿、商务蓝、科技暗黑、文艺范、中国红等
+- 🎛️ **可视化样式面板** — 颜色、字号、行高、字间距、对齐方式，选择即生效
+- 🎲 **随机配色** — 一键随机生成配色方案
+- 💾 **方案保存/加载** — 保存配置为 JSON，可导入导出分享
+- 📋 **一键复制** — 所有样式自动 inline，直接粘贴到公众号编辑器
+
+## 📝 引用示例
+
+> 读万卷书，行万里路。
+> 
+> 纸上得来终觉浅，绝知此事要躬行。
+
+## 💻 代码示例
+
+\`\`\`javascript
+function greet(name) {
+  console.log(\`Hello, \${name}!\`);
+  return { status: 'ok', time: Date.now() };
+}
+\`\`\`
+
+## 📊 表格示例
+
+| 模板 | 风格 | 适用场景 |
+|------|------|---------|
+| 微信经典绿 | 清新 | 通用 |
+| 科技暗黑 | 酷炫 | 技术文章 |
+| 文艺范 | 复古 | 散文随笔 |
+| 中国红 | 大气 | 节日主题 |
+
+## 📋 列表示例
+
+### 无序列表
+- 第一项
+- 第二项
+- 第三项
+
+### 有序列表
+1. 选择模板风格
+2. 切换到「样式设置」调整颜色和排版
+3. 可选：随机配色或保存方案
+4. 一键复制到剪贴板
+
+---
+
+**提示**：点击左侧「样式设置」标签页，可视化调整所有样式参数！
+
+**快捷键**：\`Cmd/Ctrl+S\` 或 \`Cmd/Ctrl+Enter\` 快速复制
+`;
+
+document.getElementById('markdownInput').value = sample;
+renderTemplateBar();
+renderStylePanel();
+renderPreview();
+</script>
+</body>
+</html>
