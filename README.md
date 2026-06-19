@@ -44,7 +44,6 @@ open index.html   # macOS
 
 ## 📸 截图
 
-<!-- TODO: 添加截图 -->
 ![MD2WeChat Pro 界面](./screenshot.png)
 
 ## 🎨 内置模板
