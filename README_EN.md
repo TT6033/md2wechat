@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo.png" alt="MD2WeChat Logo" width="640">
+  <img src="./logo.png" alt="MD2WeChat Banner" width="100%" height="220" style="object-fit:cover; border-radius:8px;">
 </p>
 
 <h1 align="center">📝 MD2WeChat Pro</h1>
