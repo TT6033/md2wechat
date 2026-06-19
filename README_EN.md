@@ -91,4 +91,4 @@ Issues and PRs welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 <p align="center">
   <img src="./qrcode.jpg" alt="WeChat QR Code" width="200">
 </p>
-<p align="center">Scan to follow our WeChat Official Account for more tech content</p>
+<p align="center">Follow "木工007" on WeChat for more tech content</p>

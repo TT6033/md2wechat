@@ -139,4 +139,4 @@ md2wechat/
 <p align="center">
   <img src="./qrcode.jpg" alt="公众号二维码" width="200">
 </p>
-<p align="center">扫码关注「科技自媒体」公众号，获取更多技术干货</p>
+<p align="center">扫码关注「木工007」公众号，获取更多技术干货</p>
